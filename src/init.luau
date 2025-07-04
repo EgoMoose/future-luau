@@ -24,7 +24,6 @@ export type Future<T...> = typeof(setmetatable(
 
 --[=[
 	@within Future
-	@tag Constructors
 
 	Creates an uncompleted future.
 
@@ -41,7 +40,6 @@ end
 
 --[=[
 	@within Future
-	@tag Constructors
 
 	Creates a completed future.
 
@@ -56,7 +54,6 @@ end
 
 --[=[
 	@within Future
-	@tag Constructors
 
 	Creates a future and completes with the provided values after `sec` seconds.
 
@@ -72,7 +69,6 @@ end
 
 --[=[
 	@within Future
-	@tag Constructors
 
 	Creates a new future that completes with the values from the first future to complete in the provided array.
 
@@ -112,7 +108,7 @@ end
 
 --[=[
 	@within Future
-	@tag Methods
+	@method isCompleted
 
 	Returns whether the future has been completed or not.
 
@@ -124,7 +120,7 @@ end
 
 --[=[
 	@within Future
-	@tag Methods
+	@method complete
 
 	Completes the future with the provided values.
 	
@@ -149,13 +145,13 @@ end
 
 --[=[
 	@within Future
-	@tag Methods
+	@method expect
 
 	Yields until the future is complete and returns the completed values.
 
 	@return T... -- The completed values.
 ]=]
-function FutureClass.expect<T>(self: Future<T>): T
+function FutureClass.expect<T...>(self: Future<T...>): T...
 	if self.getValue then
 		return self.getValue()
 	end
