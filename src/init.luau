@@ -1,5 +1,11 @@
 --!strict
 
+--[=[
+	@class Future
+
+	A simple future class used as an abstraction for defining eventual values that result from asynchronous computations.
+]=]
+
 local FutureStatic = {}
 
 local FutureClass = {}
@@ -16,6 +22,14 @@ export type Future<T...> = typeof(setmetatable(
 
 -- Constructors
 
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates an uncompleted future.
+
+	@return Future<T...>
+]=]
 function FutureStatic.new<T...>()
 	local self = setmetatable({}, FutureClass) :: Future<T...>
 
@@ -25,18 +39,46 @@ function FutureStatic.new<T...>()
 	return self
 end
 
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates a completed future.
+
+	@param ... T... -- The completed values.
+	@return Future<T...>
+]=]
 function FutureStatic.completed<T...>(...: T...)
 	local future = FutureStatic.new() :: Future<T...>
 	future:complete(...)
 	return future
 end
 
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates a future and completes with the provided values after `sec` seconds.
+
+	@param sec number -- How long to delay until the future completes.
+	@param ... T... -- The completed values.
+	@return Future<T...>
+]=]
 function FutureStatic.delay<T...>(sec: number, ...: T...)
 	local future = FutureStatic.new() :: Future<T...>
 	task.delay(sec, FutureClass.complete, future, ...)
 	return future
 end
 
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates a new future that completes with the values from the first future to complete in the provided array.
+
+	@param futures { Future<T...> }
+	@return Future<T...>
+]=]
 function FutureStatic.race<T...>(futures: { Future<T...> })
 	local future = FutureStatic.new() :: Future<T...>
 
@@ -68,10 +110,28 @@ end
 
 -- Public Methods
 
+--[=[
+	@within Future
+	@tag Methods
+
+	Returns whether the future has been completed or not.
+
+	@return boolean
+]=]
 function FutureClass.isCompleted<T...>(self: Future<T...>)
 	return not not self.getValue
 end
 
+--[=[
+	@within Future
+	@tag Methods
+
+	Completes the future with the provided values.
+	
+	This method will error if the future has already been completed.
+
+	@param ... T... -- The completed values.
+]=]
 function FutureClass.complete<T...>(self: Future<T...>, ...: T...)
 	assert(self.getValue == nil, "Cannot complete a future that is already completed")
 
@@ -87,6 +147,14 @@ function FutureClass.complete<T...>(self: Future<T...>, ...: T...)
 	end
 end
 
+--[=[
+	@within Future
+	@tag Methods
+
+	Yields until the future is complete and returns the completed values.
+
+	@return T... -- The completed values.
+]=]
 function FutureClass.expect<T>(self: Future<T>): T
 	if self.getValue then
 		return self.getValue()
