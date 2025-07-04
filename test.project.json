@@ -1,0 +1,21 @@
+{
+	"name": "future",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$className": "ReplicatedStorage",
+			"DevPackages": {
+				"$path": "DevPackages",
+				"Future": {
+					"$path": "default.project.json"
+				}
+			}
+		},
+		"ServerScriptService": {
+			"$className": "ServerScriptService",
+			"TestRunner": {
+				"$path": "test/TestRunner.server.luau"
+			}
+		}
+	}
+}
