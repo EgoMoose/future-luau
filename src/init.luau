@@ -31,6 +31,12 @@ function FutureStatic.completed<T...>(...: T...)
 	return future
 end
 
+function FutureStatic.delay<T...>(sec: number, ...: T...)
+	local future = FutureStatic.new() :: Future<T...>
+	task.delay(sec, FutureClass.complete, future, ...)
+	return future
+end
+
 function FutureStatic.race<T...>(futures: { Future<T...> })
 	local future = FutureStatic.new() :: Future<T...>
 

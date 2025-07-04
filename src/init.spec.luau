@@ -73,6 +73,24 @@ return function()
 		end)
 	end)
 
+	describe(".delay()", function()
+		it("should be completed with single values.", function()
+			local f = Future.delay(DELAY_TIME, "Hello world!")
+			expect(f:isCompleted()).to.equal(false)
+			expect(f:expect()).to.equal("Hello world!")
+			expect(f:isCompleted()).to.equal(true)
+		end)
+
+		it("should be completed with multiple values.", function()
+			local arr = { 1, 2, 3 }
+			local f = Future.delay(DELAY_TIME, "Hello", "world!", 123, true, arr)
+
+			expect(f:isCompleted()).to.equal(false)
+			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(f:isCompleted()).to.equal(true)
+		end)
+	end)
+
 	describe(".race()", function()
 		it("should be race with single values.", function()
 			local f1 = Future.new()
