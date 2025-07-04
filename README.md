@@ -1,6 +1,8 @@
 # future-luau
 
-A simple future class for luau. Typically used as an abstraction for defining eventual values computed by asynchronous computations.
+A simple future class for luau.
+
+Typically futures are used as an abstraction for defining eventual values that result from asynchronous computations. This makes them a great candidate for simplifying complex concurrency tasks.
 
 ## Examples
 
