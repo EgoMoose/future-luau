@@ -7,7 +7,7 @@
 			"DevPackages": {
 				"$path": "DevPackages",
 				"Future": {
-					"$path": "default.project.json"
+					"$path": "src"
 				}
 			}
 		},
