@@ -4,6 +4,11 @@ A simple future class for luau.
 
 Typically futures are used as an abstraction for defining eventual values that result from asynchronous computations. This makes them a great candidate for simplifying complex concurrency tasks.
 
+Get it here:
+
+* [Wally](https://wally.run/package/egomoose/future)
+* [Releases](https://github.com/EgoMoose/future-luau/releases)
+
 ## Examples
 
 Waiting for a button to be pressed:
