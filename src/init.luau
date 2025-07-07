@@ -108,6 +108,29 @@ function FutureStatic.race<T...>(futures: { Future<T...> })
 	return future
 end
 
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates a new future that completes when all the provided futures have completed.
+
+	@param futures { Future<T...> }
+	@return Future<()>
+]=]
+function FutureStatic.all<T...>(futures: { Future<T...> })
+	local allFuture = FutureStatic.new() :: Future<()>
+
+	task.spawn(function()
+		for _, future in futures do
+			local castedFuture = future :: Future<...any>
+			castedFuture:expect()
+		end
+		allFuture:complete()
+	end)
+
+	return allFuture
+end
+
 -- Public Methods
 
 --[=[
