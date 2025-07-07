@@ -70,6 +70,24 @@ function FutureStatic.delay<T...>(sec: number, ...: T...)
 	return future
 end
 
+function FutureStatic.fromEvent<T...>(signal: RBXScriptSignal<T...>, predicate: ((T...) -> boolean)?)
+	local future = FutureStatic.new() :: Future<T...>
+
+	local connection
+	connection = signal:Connect(function(...)
+		if not future:isCompleted() then
+			if not predicate or predicate(...) then
+				future:complete(...)
+			else
+				return
+			end
+		end
+		connection:Disconnect()
+	end)
+
+	return future
+end
+
 --[=[
 	@within Future
 	@tag Constructors
