@@ -82,6 +82,12 @@ type Signal<T...> = {
 
 	Creates a new future that completes when the provided signal fires and when the predicate (if provided) passes.
 
+	```lua
+	Future.fromSignal(game:GetService("Players").PlayerAdded, function(player)
+		return player.UserId == 1 -- only complete when player w/ UserId == 1 joins the game!
+	end)
+	```
+
 	@param signal Signal<T...> -- Something with similar connect method structure to RbxScriptSignal<T...>
 	@param predicate ((T...) -> boolean)?
 	@return Future<T...>
