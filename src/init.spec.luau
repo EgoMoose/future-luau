@@ -216,8 +216,6 @@ return function()
 	end)
 
 	describe(".fromSignal()", function()
-		FOCUS()
-
 		local Signal = require(game.ReplicatedStorage.DevPackages.Signal)
 		local RunService = game:GetService("RunService") :: RunService
 
