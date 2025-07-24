@@ -72,7 +72,21 @@ function FutureStatic.delay<T...>(sec: number, ...: T...)
 	return future
 end
 
-function FutureStatic.fromEvent<T...>(signal: RBXScriptSignal<T...>, predicate: ((T...) -> boolean)?)
+type Signal<T...> = {
+	Connect: (Signal<T...>, (T...) -> ()) -> any | { Disconnect: (any) -> () }, -- Unable to get typechecker to work with disconnect atm...
+}
+
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates a new future that completes when the provided signal fires and when the predicate (if provided) passes.
+
+	@param signal Signal<T...> -- Something with similar connect method structure to RbxScriptSignal<T...>
+	@param predicate ((T...) -> boolean)?
+	@return Future<T...>
+]=]
+function FutureStatic.fromSignal<S, T...>(signal: Signal<T...>, predicate: ((T...) -> boolean)?)
 	local future = FutureStatic.new() :: Future<T...>
 
 	local connection
@@ -84,7 +98,10 @@ function FutureStatic.fromEvent<T...>(signal: RBXScriptSignal<T...>, predicate: 
 				return
 			end
 		end
-		connection:Disconnect()
+
+		if connection.Disconnect then
+			connection:Disconnect()
+		end
 	end)
 
 	return future
