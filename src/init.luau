@@ -92,7 +92,7 @@ type Signal<T...> = {
 	@param predicate ((T...) -> boolean)?
 	@return Future<T...>
 ]=]
-function FutureStatic.fromSignal<S, T...>(signal: Signal<T...>, predicate: ((T...) -> boolean)?)
+function FutureStatic.fromSignal<T...>(signal: Signal<T...>, predicate: ((T...) -> boolean)?)
 	local future = FutureStatic.new() :: Future<T...>
 
 	local connection
