@@ -14,8 +14,9 @@ FutureClass.ClassName = "Future"
 
 export type Future<T...> = typeof(setmetatable(
 	{} :: {
+		status: "pending" | "completed",
 		awaiting: { [thread]: boolean },
-		getValue: (() -> T...)?,
+		getValue: () -> T...,
 	},
 	FutureClass
 ))
@@ -26,15 +27,16 @@ export type Future<T...> = typeof(setmetatable(
 	@within Future
 	@tag Constructors
 
-	Creates an uncompleted future.
+	Creates a pending future.
 
 	@return Future<T...>
 ]=]
 function FutureStatic.new<T...>()
 	local self = setmetatable({}, FutureClass) :: Future<T...>
 
+	self.status = "pending"
 	self.awaiting = {}
-	self.getValue = nil
+	self.getValue = function() end
 
 	return self
 end
@@ -101,9 +103,8 @@ function FutureStatic.race<T...>(futures: { Future<T...> })
 	local future = FutureStatic.new() :: Future<T...>
 
 	for _, racingFuture in futures do
-		local castedFuture = racingFuture :: Future<...any>
-		if castedFuture:isCompleted() then
-			future:complete(castedFuture:expect())
+		if racingFuture.status == "completed" then
+			future:complete(racingFuture.getValue())
 		end
 	end
 
@@ -126,6 +127,49 @@ function FutureStatic.race<T...>(futures: { Future<T...> })
 	return future
 end
 
+--[=[
+	@within Future
+	@tag Constructors
+
+	Creates a new future that completes when all the provided futures have completed.
+
+	The completed value is an array containing the input futures in the order they completed.
+
+	```lua
+	local f1 = Future.delay(1, "foo")
+	local f2 = Future.completed("bar")
+	Future.all({ f1, f2 }):expect() -- { f2, f1 }
+	```
+
+	@param futures { Future<T...> }
+	@return Future<{ Future<T...> }>
+]=]
+function FutureStatic.all<T...>(futures: { Future<T...> })
+	local allFuture = FutureStatic.new() :: Future<{ Future<T...> }>
+
+	local resolved = {}
+	local function markCompleted(future: Future<T...>)
+		table.insert(resolved, future)
+		if #resolved == #futures then
+			allFuture:complete(resolved)
+		end
+	end
+
+	for _, future in futures do
+		local castedFuture = future :: Future<...any>
+		if castedFuture.status == "completed" then
+			markCompleted(castedFuture)
+		else
+			task.spawn(function()
+				castedFuture:expect()
+				markCompleted(castedFuture)
+			end)
+		end
+	end
+
+	return allFuture
+end
+
 -- Public Methods
 
 --[=[
@@ -138,7 +182,7 @@ end
 	@return boolean
 ]=]
 function FutureClass.isCompleted<T...>(self: Future<T...>)
-	return not not self.getValue
+	return self.status == "completed"
 end
 
 --[=[
@@ -153,12 +197,14 @@ end
 	@param ... T... -- The completed values.
 ]=]
 function FutureClass.complete<T...>(self: Future<T...>, ...: T...)
-	assert(self.getValue == nil, "Cannot complete a future that is already completed")
+	assert(self.status ~= "completed", "Cannot complete a future that is already completed")
 
 	local packed = table.pack(...)
 	self.getValue = function()
 		return table.unpack(packed :: { any }, 1, packed.n)
 	end
+
+	self.status = "completed"
 
 	local awaiting = self.awaiting
 	self.awaiting = {}
@@ -177,7 +223,7 @@ end
 	@return T... -- The completed values.
 ]=]
 function FutureClass.expect<T...>(self: Future<T...>): T...
-	if self.getValue then
+	if self.status == "completed" then
 		return self.getValue()
 	end
 

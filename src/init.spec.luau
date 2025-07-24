@@ -2,6 +2,20 @@
 
 local DELAY_TIME = 0.1
 
+type Packed<T> = { [number]: T, n: number }
+
+local function isArrEqual(arr1: Packed<any>, arr2: Packed<any>)
+	if arr1.n ~= arr2.n then
+		return false
+	end
+	for i = 1, arr1.n do
+		if arr1[i] ~= arr2[i] then
+			return false
+		end
+	end
+	return true
+end
+
 return function()
 	local Future = require(script.Parent)
 
@@ -37,9 +51,9 @@ return function()
 			expect(f:isCompleted()).to.equal(false)
 			f:complete("Hello", "world!", 123, true, arr)
 			expect(f:isCompleted()).to.equal(true)
-			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
 			expect(f:isCompleted()).to.equal(true)
-			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
 		end)
 
 		it("should complete / expect with multiple values with a delay.", function()
@@ -51,9 +65,9 @@ return function()
 			end)
 
 			expect(f:isCompleted()).to.equal(false)
-			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
 			expect(f:isCompleted()).to.equal(true)
-			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
 		end)
 	end)
 
@@ -69,7 +83,7 @@ return function()
 			local f = Future.completed("Hello", "world!", 123, true, arr)
 
 			expect(f:isCompleted()).to.equal(true)
-			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
 		end)
 	end)
 
@@ -86,7 +100,7 @@ return function()
 			local f = Future.delay(DELAY_TIME, "Hello", "world!", 123, true, arr)
 
 			expect(f:isCompleted()).to.equal(false)
-			expect(f:expect()).to.equal("Hello", "world!", 123, true, arr)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
 			expect(f:isCompleted()).to.equal(true)
 		end)
 	end)
@@ -137,7 +151,7 @@ return function()
 			expect(race:isCompleted()).to.equal(false)
 			f2:complete(2, false, "world!")
 			expect(race:isCompleted()).to.equal(true)
-			expect(race:expect()).to.equal(2, false, "world!")
+			expect(isArrEqual(table.pack(race:expect()), table.pack(2, false, "world!"))).to.equal(true)
 		end)
 
 		it("should be race with multiple values with delay.", function()
@@ -154,8 +168,50 @@ return function()
 			end)
 
 			expect(race:isCompleted()).to.equal(false)
-			expect(race:expect()).to.equal(1, true, "Hello")
+			expect(isArrEqual(table.pack(race:expect()), table.pack(1, true, "Hello"))).to.equal(true)
 			expect(race:isCompleted()).to.equal(true)
+		end)
+	end)
+
+	describe(".all()", function()
+		it("should resolve with single values.", function()
+			local f1 = Future.delay(DELAY_TIME, "Hello")
+			local f2 = Future.completed("world!")
+			local all = Future.all({ f1, f2 })
+
+			expect(all:isCompleted()).to.equal(false)
+
+			local ordered = all:expect()
+			expect(ordered[1]).to.equal(f2)
+			expect(ordered[2]).to.equal(f1)
+
+			expect(all:isCompleted()).to.equal(true)
+		end)
+
+		it("should resolve with multiple values.", function()
+			local f1 = Future.delay(DELAY_TIME, 1, "Hello", true)
+			local f2 = Future.completed(2, "world!", false)
+			local all = Future.all({ f1, f2 })
+
+			expect(all:isCompleted()).to.equal(false)
+
+			local ordered = all:expect()
+			expect(ordered[1]).to.equal(f2)
+			expect(ordered[2]).to.equal(f1)
+
+			expect(all:isCompleted()).to.equal(true)
+		end)
+
+		it("should resolve with instant values.", function()
+			local f1 = Future.completed(1)
+			local f2 = Future.completed(2)
+			local all = Future.all({ f1, f2 })
+
+			expect(all:isCompleted()).to.equal(true)
+
+			local ordered = all:expect()
+			expect(ordered[1]).to.equal(f1)
+			expect(ordered[2]).to.equal(f2)
 		end)
 	end)
 end
