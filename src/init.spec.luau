@@ -214,4 +214,47 @@ return function()
 			expect(ordered[2]).to.equal(f2)
 		end)
 	end)
+
+	describe(".fromSignal()", function()
+		FOCUS()
+
+		local Signal = require(game.ReplicatedStorage.DevPackages.Signal)
+		local RunService = game:GetService("RunService") :: RunService
+
+		it("should work without a predicate", function()
+			local f = Future.fromSignal(RunService.Heartbeat)
+
+			expect(f:expect() > 0).to.equal(true)
+			expect(f:isCompleted()).to.equal(true)
+		end)
+
+		it("should work with a predicate", function()
+			local s = Signal.new() :: Signal.Signal<any>
+			local f = Future.fromSignal(s, function(x)
+				return x == "foo"
+			end)
+
+			s:Fire(1)
+			s:Fire(false)
+			s:Fire("foo")
+
+			expect(f:isCompleted()).to.equal(true)
+			expect(f:expect()).to.equal("foo")
+		end)
+
+		it("should work with a predicate and post fires", function()
+			local s = Signal.new() :: Signal.Signal<any>
+			local f = Future.fromSignal(s, function(x)
+				return x == "foo"
+			end)
+
+			s:Fire(1)
+			s:Fire(false)
+			s:Fire("foo")
+			s:Fire({})
+
+			expect(f:isCompleted()).to.equal(true)
+			expect(f:expect()).to.equal("foo")
+		end)
+	end)
 end
