@@ -172,4 +172,46 @@ return function()
 			expect(race:isCompleted()).to.equal(true)
 		end)
 	end)
+
+	describe(".all()", function()
+		it("should resolve with single values.", function()
+			local f1 = Future.delay(DELAY_TIME, "Hello")
+			local f2 = Future.completed("world!")
+			local all = Future.all({ f1, f2 })
+
+			expect(all:isCompleted()).to.equal(false)
+
+			local ordered = all:expect()
+			expect(ordered[1]).to.equal(f2)
+			expect(ordered[2]).to.equal(f1)
+
+			expect(all:isCompleted()).to.equal(true)
+		end)
+
+		it("should resolve with multiple values.", function()
+			local f1 = Future.delay(DELAY_TIME, 1, "Hello", true)
+			local f2 = Future.completed(2, "world!", false)
+			local all = Future.all({ f1, f2 })
+
+			expect(all:isCompleted()).to.equal(false)
+
+			local ordered = all:expect()
+			expect(ordered[1]).to.equal(f2)
+			expect(ordered[2]).to.equal(f1)
+
+			expect(all:isCompleted()).to.equal(true)
+		end)
+
+		it("should resolve with instant values.", function()
+			local f1 = Future.completed(1)
+			local f2 = Future.completed(2)
+			local all = Future.all({ f1, f2 })
+
+			expect(all:isCompleted()).to.equal(true)
+
+			local ordered = all:expect()
+			expect(ordered[1]).to.equal(f1)
+			expect(ordered[2]).to.equal(f2)
+		end)
+	end)
 end

@@ -27,7 +27,7 @@ export type Future<T...> = typeof(setmetatable(
 	@within Future
 	@tag Constructors
 
-	Creates an uncompleted future.
+	Creates a pending future.
 
 	@return Future<T...>
 ]=]
@@ -115,19 +115,39 @@ end
 
 	Creates a new future that completes when all the provided futures have completed.
 
+	The completed value is an array containing the input futures in the order they completed.
+
+	```lua
+	local f1 = Future.delay(1, "foo")
+	local f2 = Future.completed("bar")
+	Future.all({ f1, f2 }):expect() -- { f2, f1 }
+	```
+
 	@param futures { Future<T...> }
-	@return Future<()>
+	@return Future<{ Future<T...> }>
 ]=]
 function FutureStatic.all<T...>(futures: { Future<T...> })
-	local allFuture = FutureStatic.new() :: Future<()>
+	local allFuture = FutureStatic.new() :: Future<{ Future<T...> }>
 
-	task.spawn(function()
-		for _, future in futures do
-			local castedFuture = future :: Future<...any>
-			castedFuture:expect()
+	local resolved = {}
+	local function markCompleted(future: Future<T...>)
+		table.insert(resolved, future)
+		if #resolved == #futures then
+			allFuture:complete(resolved)
 		end
-		allFuture:complete()
-	end)
+	end
+
+	for _, future in futures do
+		local castedFuture = future :: Future<...any>
+		if castedFuture.status == "completed" then
+			markCompleted(castedFuture)
+		else
+			task.spawn(function()
+				castedFuture:expect()
+				markCompleted(castedFuture)
+			end)
+		end
+	end
 
 	return allFuture
 end
