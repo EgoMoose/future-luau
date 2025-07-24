@@ -14,8 +14,9 @@ FutureClass.ClassName = "Future"
 
 export type Future<T...> = typeof(setmetatable(
 	{} :: {
+		status: "pending" | "completed",
 		awaiting: { [thread]: boolean },
-		getValue: (() -> T...)?,
+		getValue: () -> T...,
 	},
 	FutureClass
 ))
@@ -33,8 +34,9 @@ export type Future<T...> = typeof(setmetatable(
 function FutureStatic.new<T...>()
 	local self = setmetatable({}, FutureClass) :: Future<T...>
 
+	self.status = "pending"
 	self.awaiting = {}
-	self.getValue = nil
+	self.getValue = function() end
 
 	return self
 end
@@ -83,9 +85,8 @@ function FutureStatic.race<T...>(futures: { Future<T...> })
 	local future = FutureStatic.new() :: Future<T...>
 
 	for _, racingFuture in futures do
-		local castedFuture = racingFuture :: Future<...any>
-		if castedFuture:isCompleted() then
-			future:complete(castedFuture:expect())
+		if racingFuture.status == "completed" then
+			future:complete(racingFuture.getValue())
 		end
 	end
 
@@ -143,7 +144,7 @@ end
 	@return boolean
 ]=]
 function FutureClass.isCompleted<T...>(self: Future<T...>)
-	return not not self.getValue
+	return self.status == "completed"
 end
 
 --[=[
@@ -158,12 +159,14 @@ end
 	@param ... T... -- The completed values.
 ]=]
 function FutureClass.complete<T...>(self: Future<T...>, ...: T...)
-	assert(self.getValue == nil, "Cannot complete a future that is already completed")
+	assert(self.status ~= "completed", "Cannot complete a future that is already completed")
 
 	local packed = table.pack(...)
 	self.getValue = function()
 		return table.unpack(packed :: { any }, 1, packed.n)
 	end
+
+	self.status = "completed"
 
 	local awaiting = self.awaiting
 	self.awaiting = {}
@@ -182,7 +185,7 @@ end
 	@return T... -- The completed values.
 ]=]
 function FutureClass.expect<T...>(self: Future<T...>): T...
-	if self.getValue then
+	if self.status == "completed" then
 		return self.getValue()
 	end
 
