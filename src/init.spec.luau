@@ -87,6 +87,38 @@ return function()
 		end)
 	end)
 
+	describe(".async()", function()
+		it("should be completed with single values.", function()
+			local f = Future.async(function()
+				return "Hello world!"
+			end)
+			expect(f:isCompleted()).to.equal(true)
+			expect(f:expect()).to.equal("Hello world!")
+		end)
+
+		it("should be completed with multiple values.", function()
+			local arr = { 1, 2, 3 }
+			local f = Future.async(function()
+				return "Hello", "world!", 123, true, arr
+			end)
+
+			expect(f:isCompleted()).to.equal(true)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
+		end)
+
+		it("should be work with yielding functions.", function()
+			local arr = { 1, 2, 3 }
+			local f = Future.async(function()
+				task.wait(1)
+				return "Hello", "world!", 123, true, arr
+			end)
+
+			expect(f:isCompleted()).to.equal(false)
+			expect(isArrEqual(table.pack(f:expect()), table.pack("Hello", "world!", 123, true, arr))).to.equal(true)
+			expect(f:isCompleted()).to.equal(true)
+		end)
+	end)
+
 	describe(".delay()", function()
 		it("should be completed with single values.", function()
 			local f = Future.delay(DELAY_TIME, "Hello world!")

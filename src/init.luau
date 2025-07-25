@@ -60,6 +60,33 @@ end
 	@within Future
 	@tag Constructors
 
+	Creates a future that completes with the return values from the provided async function.
+
+	```lua
+	local function getNameFromUserIdAsync(userId: number)
+		return game.Players:GetNameFromUserIdAsync(userId)
+	end
+
+	local f = Future.async(getNameFromUserIdAsync, 1)
+	print(f:expect()) -- Roblox
+	```
+
+	@param callback (A...) -> (T...)
+	@return Future<T...>
+]=]
+function FutureStatic.async<A..., T...>(callback: (A...) -> T..., ...: A...)
+	local future = FutureStatic.new() :: Future<T...>
+	local packedArgs = table.pack(...)
+	task.spawn(function()
+		future:complete(callback(table.unpack(packedArgs :: { any }, 1, packedArgs.n)))
+	end)
+	return future
+end
+
+--[=[
+	@within Future
+	@tag Constructors
+
 	Creates a future and completes with the provided values after `sec` seconds.
 
 	@param sec number -- How long to delay until the future completes.
