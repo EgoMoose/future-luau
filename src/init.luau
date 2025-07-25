@@ -193,6 +193,29 @@ function FutureStatic.all<T...>(futures: { Future<T...> })
 	return allFuture
 end
 
+-- Static Methods
+
+--[=[
+	@within Future
+	@tag Static Methods
+
+	Packs a list of values into a callback that returns the values when called.
+
+	```lua
+	local unpackCallback = Future.packAsCallback(1, "foo", true)
+	local a, b, c = unpackCallback() -- number, string, boolean
+	```
+
+	@param ... T... -- The completed values.
+	@return () -> (T...)
+]=]
+function FutureStatic.packAsCallback<T...>(...: T...)
+	local future = FutureStatic.completed(...)
+	return function()
+		return future:expect()
+	end
+end
+
 -- Public Methods
 
 --[=[

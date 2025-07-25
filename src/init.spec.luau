@@ -255,4 +255,24 @@ return function()
 			expect(f:expect()).to.equal("foo")
 		end)
 	end)
+
+	describe(".packAsCallback()", function()
+		it("should pack single values", function()
+			local unpackCallback = Future.packAsCallback(1)
+
+			expect(typeof(unpackCallback)).to.equal("function")
+			expect(unpackCallback()).to.equal(1)
+		end)
+
+		it("should pack multiple values", function()
+			local unpackCallback = Future.packAsCallback(1, "foo", true)
+
+			expect(typeof(unpackCallback)).to.equal("function")
+
+			local a, b, c = unpackCallback()
+			expect(a).to.equal(1)
+			expect(b).to.equal("foo")
+			expect(c).to.equal(true)
+		end)
+	end)
 end
