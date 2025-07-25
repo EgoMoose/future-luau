@@ -3,6 +3,7 @@ gitSourceBranch = "main"
 
 apiCategories = [
 	"Constructors",
+	"Static Methods",
 	"Methods"
 ]
 
