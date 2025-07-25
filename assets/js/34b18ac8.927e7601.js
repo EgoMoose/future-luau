@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[305],{4410:s=>{s.exports=JSON.parse('{"sourceUrl":"https://github.com/EgoMoose/future-luau/blob/main","baseUrl":"/future-luau/","classOrder":[],"apiCategories":["Constructors","Methods"]}')}}]);
