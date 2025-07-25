@@ -2,7 +2,7 @@
 name = "egomoose/future"
 description = "A simple future class used as an abstraction for defining eventual values that result from asynchronous computations."
 repository = "https://github.com/EgoMoose/future-luau"
-version = "0.2.1"
+version = "0.3.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 license = "MIT"
