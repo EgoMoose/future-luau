@@ -87,9 +87,9 @@ return function()
 		end)
 	end)
 
-	describe(".async()", function()
+	describe(".spawn()", function()
 		it("should be completed with single values.", function()
-			local f = Future.async(function()
+			local f = Future.spawn(function()
 				return "Hello world!"
 			end)
 			expect(f:isCompleted()).to.equal(true)
@@ -98,7 +98,7 @@ return function()
 
 		it("should be completed with multiple values.", function()
 			local arr = { 1, 2, 3 }
-			local f = Future.async(function()
+			local f = Future.spawn(function()
 				return "Hello", "world!", 123, true, arr
 			end)
 
@@ -108,7 +108,7 @@ return function()
 
 		it("should be work with yielding functions.", function()
 			local arr = { 1, 2, 3 }
-			local f = Future.async(function()
+			local f = Future.spawn(function()
 				task.wait(1)
 				return "Hello", "world!", 123, true, arr
 			end)

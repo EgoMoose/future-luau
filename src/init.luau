@@ -60,21 +60,21 @@ end
 	@within Future
 	@tag Constructors
 
-	Creates a future that completes with the return values from the provided async function.
+	Creates a future that completes with the return values from the provided function.
 
 	```lua
 	local function getNameFromUserIdAsync(userId: number)
 		return game.Players:GetNameFromUserIdAsync(userId)
 	end
 
-	local f = Future.async(getNameFromUserIdAsync, 1)
+	local f = Future.spawn(getNameFromUserIdAsync, 1)
 	print(f:expect()) -- Roblox
 	```
 
 	@param callback (A...) -> (T...)
 	@return Future<T...>
 ]=]
-function FutureStatic.async<A..., T...>(callback: (A...) -> T..., ...: A...)
+function FutureStatic.spawn<A..., T...>(callback: (A...) -> T..., ...: A...)
 	local future = FutureStatic.new() :: Future<T...>
 	local packedArgs = table.pack(...)
 	task.spawn(function()
@@ -303,4 +303,4 @@ end
 
 --
 
-return table.clone(FutureStatic)
+return table.clone(FutureStatic) :: typeof(FutureStatic)
