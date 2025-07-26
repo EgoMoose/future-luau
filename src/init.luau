@@ -16,7 +16,7 @@ export type Future<T...> = typeof(setmetatable(
 	{} :: {
 		status: "pending" | "completed",
 		awaiting: { [thread]: boolean },
-		getValue: () -> T...,
+		getValues: () -> T...,
 	},
 	FutureClass
 ))
@@ -36,7 +36,7 @@ function FutureStatic.new<T...>()
 
 	self.status = "pending"
 	self.awaiting = {}
-	self.getValue = function() end
+	self.getValues = function() end
 
 	return self
 end
@@ -154,7 +154,7 @@ function FutureStatic.race<T...>(futures: { Future<T...> })
 
 	for _, racingFuture in futures do
 		if racingFuture.status == "completed" then
-			future:complete(racingFuture.getValue())
+			future:complete(racingFuture.getValues())
 		end
 	end
 
@@ -237,9 +237,9 @@ end
 	@return () -> (T...)
 ]=]
 function FutureStatic.packAsCallback<T...>(...: T...)
-	local future = FutureStatic.completed(...)
-	return function()
-		return future:expect()
+	local packed = table.pack(...)
+	return function(): T...
+		return table.unpack(packed :: { any }, 1, packed.n)
 	end
 end
 
@@ -272,11 +272,7 @@ end
 function FutureClass.complete<T...>(self: Future<T...>, ...: T...)
 	assert(self.status ~= "completed", "Cannot complete a future that is already completed")
 
-	local packed = table.pack(...)
-	self.getValue = function()
-		return table.unpack(packed :: { any }, 1, packed.n)
-	end
-
+	self.getValues = FutureStatic.packAsCallback(...)
 	self.status = "completed"
 
 	local awaiting = self.awaiting
@@ -297,7 +293,7 @@ end
 ]=]
 function FutureClass.expect<T...>(self: Future<T...>): T...
 	if self.status == "completed" then
-		return self.getValue()
+		return self.getValues()
 	end
 
 	local thread = coroutine.running()
@@ -307,4 +303,4 @@ end
 
 --
 
-return FutureStatic
+return table.clone(FutureStatic)
