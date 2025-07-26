@@ -303,4 +303,4 @@ end
 
 --
 
-return FutureStatic
+return table.clone(FutureStatic)
